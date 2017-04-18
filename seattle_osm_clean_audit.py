@@ -23,7 +23,6 @@ k = 5000
 
 def get_element(osm_file, tags=('node', 'way', 'relation')):
     """Yield element if it is the right type of tag
-
     Reference:
     http://stackoverflow.com/questions/3095434/inserting-newlines-in-xml-file-generated-via-xml-etree-elementtree-in-python
     """
@@ -107,7 +106,8 @@ def audit_street_type(street_types, street_name):
 
 
 def audit(osmfile):
-    osm_file = open('seattle_washington.osm', 'r', encoding='cp1252', errors='replace')
+    #osm_file = open('seattle_washington.osm', 'r', encoding='cp1252', errors='replace')
+    osm_file = open('seattle_washington.osm', 'r')
     street_types = defaultdict(set)
     for event, elem in ET.iterparse(osm_file, events=('start',)):
         if elem.tag == 'node' or elem.tag == 'way':
@@ -119,12 +119,6 @@ def audit(osmfile):
 
 
 st_types = audit(OSM_FILE)
-
-# The above Python dictionary shows the entire collection of street types after we have done our initial cleaning. Now we see that a vast majority of street types no longer bears problems. However, some of the street types are obviously wrong. Most notably, whenever **Suite number / apartment number** is present in the street name, the code has confused it with the name of the street. This needs our attention.
-#
-# To address this problem, we should make sure that our subsequent code to clean and wrangle the OSM data will shape the raw data in such a way that will avoid confusing the suite number / apartment number with the street name. A convenient way to achieve this is to present an address in the JSON document (namely, the cleaned file) with schema such as this:
-#
-# "address": {"street": "3401 Evanston Ave N, Suite A"}
 
 mapping = {"St": "Street",
            "St.": "Street",
@@ -141,13 +135,6 @@ def update_name(name, mapping):
     name = re.sub(street_type, mapping[street_type], name)
     return name
 
-
-mapping
-
-# Now, prepaing the Data for Dababase Insertion
-
-
-# !/usr/bin/env python
 
 lower = re.compile(r'^([a-z]|_)*$')
 lower_colon = re.compile(r'^([a-z]|_)*:([a-z]|_)*$')
