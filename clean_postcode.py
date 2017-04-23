@@ -13,8 +13,11 @@ postcode_re5 = re.compile(r'\d{5}$')
 postcode_re9 = re.compile(r'^(\d{5})-\d{4}$')
 
 
-expected_postcode = set(["98072", "98053", "98074", "98075", "98027", "98059", "98366", "98311", "98383",
-            "98370", "98115", "98125", "98034", "98103", "98201"])
+#expected_postcode = set(["98072-0000", "98053-0000", "98074-0000", "98075-0000", "98027-0000", "98059-0000",
+#                         "98366-0000", "98311-0000", "98383-0000", "98370-0000", "98115-0000", "98125-0000",
+#                         "98034-0000", "98103-0000", "98201-0000"])
+
+expected_postcode = []
 
 
 
@@ -30,10 +33,11 @@ def audit_postcode_type(current, bad_codes, expected_postcode):
     ## logic4: otherwise, check if postcode_re starts with 9; if postcode_re starts with 9, add to expeted_codes
     ## logic5: postcode is either len 5 or len 9
 
-    if not current.isdigit():
-        m = re.search(postcode_re5, current)
-        if m:
-            current = m.group()+'-0000'
+
+    m = re.search(postcode_re5, current)
+    if m:
+        current = m.group()+'-0000'
+
 
 
         #if postcode_re9.search(current):
@@ -43,13 +47,14 @@ def audit_postcode_type(current, bad_codes, expected_postcode):
         #    current = str(re.findall(postcode_re5, current))+'-0000'
 
 
-    if not current.startswith('9'):
-        print current
+    if current.startswith('9'):
+        if current not in expected_postcode:
+            expected_postcode.append(current)
+        print 'good', current
+    else:
         if current not in bad_codes:
             bad_codes.append(current)
-    else:
-        #print current
-        expected_postcode.update(current)
+            print 'bad', current
 
 
 def audit_postcode(osmfile):
@@ -66,5 +71,5 @@ def audit_postcode(osmfile):
 
 error_codes, expected_postcode = audit_postcode(OSM_FILE)
 
-print error_codes
-print expected_postcode
+#print error_codes
+#print expected_postcode
