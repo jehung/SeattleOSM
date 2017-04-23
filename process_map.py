@@ -1,6 +1,8 @@
 import xml.etree.ElementTree as ET
 import xml.etree.cElementTree as ET
 from collections import defaultdict
+import clean_street
+import clean_postcode
 import re
 
 

@@ -32,11 +32,14 @@ def audit_postcode_type(current, bad_codes, expected_postcode):
     ## logic3: if postcode starts with 9, add to expected_codes
     ## logic4: otherwise, check if postcode_re starts with 9; if postcode_re starts with 9, add to expeted_codes
     ## logic5: postcode is either len 5 or len 9
+    m9 = re.search(postcode_re9, current)
+    if m9:
+        current = re.findall(r'^(\d{5})-\d{4}$', current)[0]
 
 
-    m = re.search(postcode_re5, current)
-    if m:
-        current = m.group()+'-0000'
+    m5 = re.search(postcode_re5, current)
+    if m5:
+        current = m5.group()
 
 
 
@@ -71,5 +74,5 @@ def audit_postcode(osmfile):
 
 error_codes, expected_postcode = audit_postcode(OSM_FILE)
 
-#print error_codes
-#print expected_postcode
+print error_codes
+print expected_postcode
