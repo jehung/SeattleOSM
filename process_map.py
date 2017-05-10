@@ -4,18 +4,22 @@ from collections import defaultdict
 import clean_street
 import clean_postcode
 import re
+import codecs
+import json
 
 
-lower = re.compile(r'^([a-z]|_)*$')
-lower_colon = re.compile(r'^([a-z]|_)*:([a-z]|_)*$')
+OSM_FILE = "seattle_washington.osm"
 problemchars = re.compile(r'[=\+/&<>;\'"\?%#$@\,\. \t\r\n]')
 address_regex = re.compile(r'^addr\:')
 street_regex = re.compile(r'^street')
+street_type_re = re.compile(r'\b\S+\.?$', re.IGNORECASE)
+
 
 CREATED = ["version", "changeset", "timestamp", "user", "uid"]
 
 
-st_types = audit(OSM_FILE)
+st_types = clean_street.audit(OSM_FILE)
+error_codes, expected_postcode = clean_postcode.audit_postcode(OSM_FILE)
 
 mapping = {"St": "Street",
            "St.": "Street",
@@ -69,6 +73,11 @@ def shape_element(element):
                 if 'ref' in child.attrib:
                     node['node_refs'].append(child.get('ref'))
 
+            # skip the node where postcode is wrong
+            if child.tag == 'tag':
+                if clean_postcode.is_postcode(child) and child.attrib["v"] in error_codes:
+                    continue
+
             # throw out not-tag elements and elements without `k` or `v`
             if child.tag != 'tag' or 'k' not in child.attrib or 'v' not in child.attrib:
                 continue
@@ -99,16 +108,18 @@ def shape_element(element):
                 val = address[key]
                 if street_regex.search(key):
                     if key == 'street':
-                        street_full = update_name(val, mapping) if val in mapping else val
+                        street_full = update_name(val, mapping) if val in mapping.values() else val
                     elif 'street:' in key:
-                        street_dict[key.replace('street:', '')] = update_name(val, mapping) if val in mapping else val
+                        street_dict[key.replace('street:', '')] = update_name(val, mapping) if val in mapping.values() else val
                 else:
-                    node['address'][key] = update_name(val, mapping) if val in mapping else val
+                    node['address'][key] = update_name(val, mapping) if val in mapping.values() else val
             # assign street_full or fallback to compile street dict
             if street_full:
-                node['address']['street'] = update_name(street_full, mapping) if street_full in mapping else street_full
+                node['address']['street'] = update_name(street_full, mapping) if street_full in mapping.values() else street_full
             elif len(street_dict) > 0:
                 node['address']['street'] = ' '.join([street_dict[key] for key in street_format])
+
+
         return node
     else:
         return None
