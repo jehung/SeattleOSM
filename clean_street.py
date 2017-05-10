@@ -28,8 +28,8 @@ def audit_street_type(street_types, street_name):
 
 
 def audit(osmfile):
-    #osm_file = open('seattle_washington.osm', 'r', encoding='cp1252', errors='replace')
-    osm_file = open(OSM_FILE, 'r')
+    osm_file = open(OSM_FILE, 'r', encoding='cp1252', errors='replace')
+    #osm_file = open(OSM_FILE, 'r')
     street_types = defaultdict(set)
     for event, elem in ET.iterparse(osm_file, events=('start',)):
         if elem.tag == 'node' or elem.tag == 'way':
@@ -39,5 +39,4 @@ def audit(osmfile):
     osm_file.close()
     return street_types
 
-st_types = audit(OSM_FILE)
 

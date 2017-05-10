@@ -53,26 +53,23 @@ def audit_postcode_type(current, bad_codes, expected_postcode):
     if current.startswith('9'):
         if current not in expected_postcode:
             expected_postcode.append(current)
-        print 'good', current
+        print('good', current)
     else:
         if current not in bad_codes:
             bad_codes.append(current)
-            print 'bad', current
+            print('bad', current)
 
 
 def audit_postcode(osmfile):
-    osm_file = open(OSM_FILE, 'r')
+    osm_file = open(OSM_FILE, 'r', encoding='cp1252', errors='replace')
+    #osm_file = open(OSM_FILE, 'r')
     bad_codes = []
     #expected_postcode = defaultdict(set)
     for event, elem in ET.iterparse(osm_file, events=("start",)):
-        if elem.tag == "node" or elem.tag == "way":
+        if elem.tag == "node" or elem.tag=="way":
             for tag in elem.iter("tag"):
                 if is_postcode(tag):
                     audit_postcode_type(tag.attrib["v"], bad_codes, expected_postcode)
     return bad_codes, expected_postcode
 
 
-error_codes, expected_postcode = audit_postcode(OSM_FILE)
-
-print error_codes
-print expected_postcode
